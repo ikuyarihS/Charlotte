@@ -12,7 +12,7 @@ class Dispatcher(object):
         database_connection: The datanase interface.
         consumer: The discord REST API consumer to send messages through.
     """
-    COMMAND_PREFIX = "!c/" # Must end with delimiter
+    COMMAND_PREFIX = "!c/"  # Must end with delimiter
     DELIMITER      = "/"
 
     def __init__(self, inc_queue, database_connection, consumer, commands, queue_timeout=10, logging=logging):
@@ -33,7 +33,7 @@ class Dispatcher(object):
         Returns:
             A boolean indicating whether the message is a command.
         """
-        return len(content) >= len(Dispatcher.COMMAND_PREFIX) and content[:3] == Dispatcher.COMMAND_PREFIX
+        return content[:len(Dispatcher.COMMAND_PREFIX)] == Dispatcher.COMMAND_PREFIX
 
     def parse(self, content):
         """Parses a message to extract the command and its parameters.
@@ -45,10 +45,9 @@ class Dispatcher(object):
             A tuple containing the command identifier and the parameters.
         """
         if self.is_command(content):
-
             # Extract command
             #commands look like:
-            # prefix(includes delimiter) command delimiter params
+            #   prefix(includes delimiter) command delimiter params
             # without spaces
             command = content.split(Dispatcher.DELIMITER)[1]
             if command == "":
@@ -63,6 +62,7 @@ class Dispatcher(object):
                 params = params[1:]
 
             return command, params
+
         return None, None
 
     def dispatch(self, command_id, message, *args):
@@ -76,7 +76,8 @@ class Dispatcher(object):
         Returns:
             The results of the command.
         """
-        self.logger.info("Command called by %s(%s): %s.", message.username, message.author_id, command_id)
+        self.logger.info("Command called by %s(%s): %s.",
+                         message.username, message.author_id, command_id)
         command = self.commands.identifiers[command_id]
         return command(message, self.data_conn, *args)
 
@@ -111,10 +112,6 @@ class Dispatcher(object):
                 message = self.inc_queue.get(timeout=self.queue_timeout)
             except queue.Empty:
                 continue
-
-            if message == None:
-                self.stop()
-                break
 
             self.process_message(message)
         self.logger.info("Dispatcher loop ended.")

@@ -14,3 +14,7 @@ docs/build
 docs/source/_generated
 .coverage
 charlotte.log
+
+.mypy_cache
+.vscode
+_testing_snippets.py
